@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8>
+    <title>Dynamic Motion Primitives</title>
+    <meta name="description" content="Interactive demonstration of dynamic movement primitives.">
+    <meta name="author" content="Nick Walker"/>
+    <meta property="og:image" content="https://dmp.nickwalker.us/media/images/og-banner.jpg"/>
+    <link rel="canonical" href="https://dmp.nickwalker.us/">
+
+    <link rel="shortcut icon" href="/media/images/favicon.png"/>
+    <link rel="apple-touch-icon" href="/media/images/apple-touch-icon.png">
+    <link rel="mask-icon" href="/media/images/mask.svg" color="#891920">
+
+    <link rel="stylesheet" href="media/css/style.css"/>
+    <link rel="stylesheet" href="media/css/help.css">
+    <script src="build/build.js"></script>
+
+</head>
+<body>
+<div id="workspace">
+
+</div>
+
+
+<div id="main-pane" class="pane">
+    <ul class="button-section" id="tools">
+        <li class="demonstrate-tool tool" title="Demonstrate"><img src="media/images/demonstrate.svg"/></li>
+        <li class="add-obstacle tool" title="Add Obstacle"><img src="media/images/add-obstacle.svg"/></li>
+        <li class="query tool" title="Query Model"><img src="media/images/query.svg"/></li>
+        <li class="select tool" title="Select"><img src="media/images/select.svg"/></li>
+    </ul>
+    <hr class="tools-divider">
+    <ul class="button-section options" id="options">
+        <li class="save-image tool" title="Save image"><img src="media/images/save.svg"></li>
+        <li class="show-field tool" title="Show tool force field"><img src="media/images/field.svg"></li>
+        <li class="reset" title="Reset canvas"><img src="media/images/reset.svg"></li>
+        <li class="help" title="Help"><img src="media/images/help.svg"></li>
+        <li class="show-keyboard-shortcuts" title="Show keyboard shortcuts"><img src="media/images/shortcuts.svg"></li>
+    </ul>
+
+</div>
+
+<script>
+    let renderer = null;
+    addEventListener('DOMContentLoaded', function () {
+        let workspace = document.getElementById("workspace");
+        let toolsPane = document.getElementById("tools");
+        let optionsPane = document.getElementById("options");
+        let ui = new DMPUI(workspace, toolsPane, optionsPane);
+        renderer = new InteractiveCurveRenderer(workspace);
+        ui.renderer = renderer;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        ui.size = new Vec2(window.innerWidth, window.innerHeight);
+
+        window.onresize = function (event) {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            ui.size = new Vec2(window.innerWidth, window.innerHeight);
+        };
+
+    });
+</script>
+
+
+</body>
+</html>
