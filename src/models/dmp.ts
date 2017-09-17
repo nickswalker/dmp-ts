@@ -2,8 +2,7 @@ class DMP {
     k: number;
     d: number;
     alpha: number;
-    w: [number];
-    basis: Basis;
+    f: FunctionApproximator;
 
     constructor(k: number, d?: number) {
         this.k = k;

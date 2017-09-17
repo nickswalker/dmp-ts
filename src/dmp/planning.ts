@@ -20,9 +20,7 @@ function makeDMPRollout(dmp: DMP, startState: number, startVelocity: number, goa
     };
 
     let f = (phase: number) => {
-        let phi_s = dmp.basis.evaluate(phase);
-        let normalizingFactor = sum(phi_s);
-        return (dot(dmp.w, phi_s) * phase / normalizingFactor);
+        return dmp.f.evaluate(phase);
     };
 
     var poses: [number, number][] = [];

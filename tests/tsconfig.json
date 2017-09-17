@@ -4,13 +4,11 @@
     "target": "es2016",
     "removeComments": true,
     "preserveConstEnums": true,
-    "outFile": "./build/build.js",
-    "sourceRoot": "src/",
-    "rootDir": "./src/",
-    "sourceMap": true
+    "sourceMap": true,
+    "outDir": "../build"
   },
   "exclude": [
     "node_modules",
-    "tests"
+    "../src"
   ]
 }
