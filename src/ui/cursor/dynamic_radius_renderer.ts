@@ -1,5 +1,9 @@
 ///<reference path="cursor_renderer.ts"/>
-class DynamicRadiusRenderer implements CursorRenderer {
+import {default as Vec2, vecMax, vecMin} from "../../models/vec2.js";
+import {CircleRenderer, CrossRenderer, CursorRenderer} from "./cursor_renderer.js";
+import {circle} from "../../drawing_utilities.js";
+
+export default class DynamicRadiusRenderer implements CursorRenderer {
     private _radius: number = 50;
     private dirty: boolean = true;
     private canvas: HTMLCanvasElement;

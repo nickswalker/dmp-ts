@@ -1,7 +1,8 @@
-///<reference path="cursor_renderer.ts"/>
-///<reference path="dynamic_radius_renderer.ts"/>
+import Vec2 from "../../models/vec2.js";
+import {CrossRenderer, CursorRenderer} from "./cursor_renderer.js";
+import {Tool} from "../tools.js";
 
-class CursorOverlay {
+export default class CursorOverlay {
 
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;

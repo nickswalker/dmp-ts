@@ -1,11 +1,14 @@
-function makeLinkedDMPRollout(dmps: [DMP], startState: Vec2, startVelocity: Vec2, goalState: Vec2, tau: number, timeStep: number): [Vec2, number][] {
+import DMP from "../models/dmp.js";
+import Vec2 from "../models/vec2.js";
 
-    var poses: [number, number][][] = [];
-    for (var i = 0; i < dmps.length; i++) {
+export function makeLinkedDMPRollout(dmps: DMP[], startState: Vec2, startVelocity: Vec2, goalState: Vec2, tau: number, timeStep: number): [Vec2, number][] {
+
+    let poses: [number, number][][] = [];
+    for (let i = 0; i < dmps.length; i++) {
         poses.push(makeDMPRollout(dmps[i],startState.get(i),startVelocity.get(i),goalState.get(i),tau,timeStep));
     }
-    var finalPoses: [Vec2, number][] = [];
-    for (var i = 0; i < poses[0].length; i++) {
+    let finalPoses: [Vec2, number][] = [];
+    for (let i = 0; i < poses[0].length; i++) {
         finalPoses.push([new Vec2(poses[0][i][0], poses[1][i][0]), poses[0][0][1]]);
     }
     return finalPoses;
@@ -23,16 +26,16 @@ function makeDMPRollout(dmp: DMP, startState: number, startVelocity: number, goa
         return dmp.f.evaluate(phase);
     };
 
-    var poses: [number, number][] = [];
+    let poses: [number, number][] = [];
 
-    var t = 0;
+    let t = 0;
     let x_0 = startState;
-    var x = x_0;
-    var v = startVelocity;
-    var g = goalState;
+    let x = x_0;
+    let v = startVelocity;
+    let g = goalState;
     let s = createPhaseFunctor(x_0);
     while (t < tau) {
-        var v_dot = dmp.k * ((g - x) - (g - x_0) + f(s(t))) - dmp.d * v;
+        let v_dot = dmp.k * ((g - x) - (g - x_0) + f(s(t))) - dmp.d * v;
         v_dot /= tau;
         let x_dot = v / tau;
 

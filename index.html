@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset=utf-8>
-    <title>Dynamic Motion Primitives</title>
+    <title>Dynamic Movement Primitives</title>
     <meta name="description" content="Interactive demonstration of dynamic movement primitives.">
     <meta name="author" content="Nick Walker"/>
     <meta property="og:image" content="https://dmp.nickwalker.us/media/images/og-banner.jpg"/>
@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" href="media/css/style.css"/>
     <link rel="stylesheet" href="media/css/help.css">
-    <script src="build/build.js"></script>
+    <script src="build/main.js" type="module"></script>
 
 </head>
 <body>
@@ -40,26 +40,6 @@
     </ul>
 
 </div>
-
-<script>
-    let renderer = null;
-    addEventListener('DOMContentLoaded', function () {
-        let workspace = document.getElementById("workspace");
-        let toolsPane = document.getElementById("tools");
-        let optionsPane = document.getElementById("options");
-        let ui = new DMPUI(workspace, toolsPane, optionsPane);
-        renderer = new InteractiveCurveRenderer(workspace);
-        ui.renderer = renderer;
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        ui.size = new Vec2(window.innerWidth, window.innerHeight);
-
-        window.onresize = function (event) {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            ui.size = new Vec2(window.innerWidth, window.innerHeight);
-        };
-
-    });
-</script>
 
 
 </body>

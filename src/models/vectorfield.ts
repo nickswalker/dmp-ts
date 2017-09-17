@@ -1,5 +1,6 @@
-///<reference path="vec2.ts"/>
-interface VectorField {
+import Vec2 from "./vec2.js";
+
+export default interface VectorField {
     atPoint(point: Vec2): Vec2
 }
 

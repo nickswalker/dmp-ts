@@ -1,13 +1,16 @@
-///<reference path="../models/vector.ts"/>
-///<reference path="../.d.ts"/>
+import DMP from "../models/dmp.js";
+import Trajectory from "../models/trajectory.js";
+import Obstacle from "../models/obstacle.js";
+import {Operation} from "../operations/operation.js";
+import {black, white} from "../models/color.js";
 
-interface DMPRenderer {
+export interface DMPRenderer {
     applyOperations(operations: [Operation]);
     save();
     reset();
 }
 
-class InteractiveCurveRenderer implements DMPRenderer {
+export default class InteractiveCurveRenderer implements DMPRenderer {
     renderCanvas: HTMLCanvasElement;
     displayCanvas: HTMLCanvasElement;
     obstacles: Obstacle[] = [];

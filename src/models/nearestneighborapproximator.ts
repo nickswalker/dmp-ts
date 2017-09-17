@@ -1,4 +1,6 @@
-class NearestNeighborApproximator implements FunctionApproximator {
+import {FunctionApproximator} from "./functionapproximator.js";
+
+export default class NearestNeighborApproximator implements FunctionApproximator {
     samples: [number, number][];
     constructor(samples: [number,number][]) {
         this.samples = samples;

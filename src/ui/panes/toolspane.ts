@@ -1,7 +1,6 @@
-///<reference path="../ui.ts"/>
-///<reference path="../tools.ts"/>
+import {Tool, ToolParameters} from "../tools.js";
 
-class ToolsPane {
+export default class ToolsPane {
     container: HTMLElement;
     toolToButtonMapping: {[key: number]: HTMLElement};
     private _currentTool: Tool;

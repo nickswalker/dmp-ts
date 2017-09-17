@@ -1,12 +1,11 @@
-///<reference path="../ui.ts"/>
-///<reference path="../tools.ts"/>
+import {UICommandable} from "../ui.js";
 
-enum ButtonBehavior {
+export enum ButtonBehavior {
     Toggle,
     Temporary
 }
 
-enum UICommand {
+export enum UICommand {
     Save,
     ShowField,
     ShowHelp,
@@ -14,7 +13,7 @@ enum UICommand {
     ShowKeyboardShortcutOverlay
 }
 
-class ControlsPane {
+export default class ControlsPane {
     container: HTMLElement;
     optionToButtonMapping: {[key: number]: HTMLElement};
     buttonBehaviors: {[key: number]: ButtonBehavior};

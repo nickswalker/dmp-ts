@@ -1,4 +1,6 @@
-class DMP {
+import {FunctionApproximator} from "./functionapproximator.js";
+
+export default class DMP {
     k: number;
     d: number;
     alpha: number;

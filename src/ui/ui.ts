@@ -1,15 +1,24 @@
-///<reference path="cursor/cursor_overlay.ts"/>
-///<reference path="keyboard.ts"/>
-///<reference path="vector_field_overlay.ts"/>
-///<reference path="panes/toolspane.ts"/>
-///<reference path="help_overlay.ts"/>
+import Vec2 from "../models/vec2.js";
+import Trajectory from "../models/trajectory.js";
+import {VectorFieldOverlay} from "./vector_field_overlay.js";
+import {Operation} from "../operations/operation.js";
+import CursorOverlay from "./cursor/cursor_overlay.js";
+import {UICommand} from "./panes/controlspane.js";
+import AddDemonstration from "../operations/adddemonstration.js";
+import {DMPRenderer} from "../renderer/dmprenderer.js";
+import ToolsPane from "./panes/toolspane.js";
+import MarblingKeyboardUI from "./keyboard.js";
+import Modal from "./panes/modal.js";
+import KeyboardShortcutOverlay from "./help_overlay.js";
+import {KeyboardShortcut} from "./keyboard.js";
+import ControlsPane from "./panes/controlspane.js";
+import {Tool} from "./tools.js";
 
-
-interface UICommandable {
+export interface UICommandable {
     applyCommand(command: UICommand)
 }
 
-class DMPUI implements UICommandable {
+export class DMPUI implements UICommandable {
     toolsPane: ToolsPane;
     controlsPane: ControlsPane;
     _renderer: DMPRenderer;

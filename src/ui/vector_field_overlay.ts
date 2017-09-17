@@ -1,7 +1,7 @@
-///<reference path="../models/vectorfield.ts"/>
-///<reference path="panes/toolspane.ts"/>
-
-class VectorFieldOverlay {
+import Vec2 from "../models/vec2.js";
+import VectorField from "../models/vectorfield.js";
+//import {CanvasRenderingContext2D} from "../index.js"
+export class VectorFieldOverlay {
     private renderer: VectorFieldRenderer;
 
     constructor(container: HTMLElement) {
@@ -26,7 +26,7 @@ class VectorFieldOverlay {
     }
 }
 
-class VectorFieldRenderer {
+export class VectorFieldRenderer {
     private overlayCanvas: HTMLCanvasElement;
     private overlayContext: CanvasRenderingContext2D;
     private _spacing: number = 40;

@@ -1,7 +1,4 @@
-///<reference path="ui.ts"/>
-
-import set = Reflect.set;
-enum KeyboardShortcut {
+export enum KeyboardShortcut {
     Plus = 0,
     Minus = 1,
     S = 2,
@@ -45,11 +42,11 @@ const keyDownOnly = new Set([
     "ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"
 ]);
 
-interface MarblingKeyboardUIDelegate {
+export interface MarblingKeyboardUIDelegate {
     didPressShortcut(shortcut: KeyboardShortcut)
 }
 
-class MarblingKeyboardUI {
+export default class MarblingKeyboardUI {
     keyboardDelegate: MarblingKeyboardUIDelegate;
     acceptingNewKeys: boolean = true;
     shiftDown: boolean = false;

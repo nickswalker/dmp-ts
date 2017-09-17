@@ -1,3 +1,4 @@
+import {Basis} from "./basis.js"
 function linspace(a,b,n) {
     if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
     if(n<2) { return n===1?[a]:[]; }
@@ -7,7 +8,7 @@ function linspace(a,b,n) {
     return ret;
 }
 
-class GaussianBasis implements Basis{
+export default class GaussianBasis implements Basis{
     centers: number[];
     widths: number[];
     constructor(centers: number[], widths: number[]) {

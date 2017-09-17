@@ -1,0 +1,19 @@
+{
+  "name": "dmp-ts",
+  "description": "",
+  "version": "0.1.0",
+  "devDependencies": {
+    "typescript": "~2.5.2",
+    "ts-lint": "^4.5.1",
+    "mocha": "^3.5.3",
+    "@types/mocha": "^2.2.43"
+  },
+  "main": "lib/waza.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "tslint {src,test}/**/*.ts --format stylish",
+    "test": "mocha build/test/*.js",
+    "pretest": "cd test; tsc",
+    "test:watch": "mocha -w --reporter min"
+  }
+}

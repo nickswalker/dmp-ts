@@ -1,5 +1,6 @@
-///<reference path="panes/modal.ts"/>
-class KeyboardShortcutOverlay extends Modal {
+import Modal from "./panes/modal.js";
+
+export default class KeyboardShortcutOverlay extends Modal {
 
     constructor() {
         super();

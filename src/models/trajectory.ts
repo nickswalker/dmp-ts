@@ -1,4 +1,6 @@
-class Trajectory {
+import Vec2 from "./vec2.js";
+
+export default class Trajectory {
     points: Vec2[];
     stamps: number[];
     _cached_path: Path2D;

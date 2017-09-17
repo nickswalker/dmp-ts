@@ -1,4 +1,6 @@
-class Vec2 {
+import Mat2x2 from "./matrix.js";
+
+export default class Vec2 {
     x: number;
     y: number;
 
@@ -73,10 +75,10 @@ class Vec2 {
     }
 }
 
-function vecMax(first: Vec2, second: Vec2) {
+export function vecMax(first: Vec2, second: Vec2) {
     return new Vec2(Math.max(first.x, second.x), Math.max(first.y, second.y));
 }
 
-function vecMin(first: Vec2, second: Vec2) {
+export function vecMin(first: Vec2, second: Vec2) {
     return new Vec2(Math.min(first.x, second.x), Math.min(first.y, second.y));
 }

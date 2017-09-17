@@ -1,5 +1,5 @@
 ///<reference path="panes/toolspane.ts"/>
-enum Tool {
+export enum Tool {
     Demonstrate = 0,
     AddObstacle = 1,
     Query = 2,
@@ -22,7 +22,7 @@ const secondaryKeys: { [key: number]: string } = toolInitializedObject();
 const guides: { [key: number]: string } = toolInitializedObject();
 
 
-class ToolParameters {
+export class ToolParameters {
     parameters: { [key: number]: string };
     onchange: Function;
 
