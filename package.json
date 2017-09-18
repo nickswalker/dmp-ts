@@ -1,18 +1,22 @@
 {
   "name": "dmp-ts",
-  "description": "",
+  "description": "Interactive Dynamic Motion Primitives",
+  "repository": "https://github.com/nickswalker/dmp-ts.git",
+  "license": "MIT",
   "version": "0.1.0",
   "devDependencies": {
     "typescript": "~2.5.2",
     "ts-lint": "^4.5.1",
     "mocha": "^3.5.3",
-    "@types/mocha": "^2.2.43"
+    "@types/mocha": "^2.2.43",
+    "chai": "^4.1.2",
+    "@types/chai": "^4.0.4"
   },
   "main": "lib/waza.js",
   "scripts": {
     "build": "tsc",
     "lint": "tslint {src,test}/**/*.ts --format stylish",
-    "test": "mocha build/test/*.js",
+    "test": "mocha $NODE_DEBUG_OPTION build/test/*.js",
     "pretest": "cd test; tsc",
     "test:watch": "mocha -w --reporter min"
   }
