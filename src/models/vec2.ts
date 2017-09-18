@@ -36,10 +36,7 @@ export default class Vec2 {
     }
 
     scale(factor: number) {
-        this.x *= factor;
-        this.y *= factor;
-        // For chainability
-        return this;
+        return new Vec2(this.x * factor, this.y * factor);
     }
 
     norm() {
@@ -72,6 +69,10 @@ export default class Vec2 {
                 return this.y;
         }
         console.assert(false, "Invalid vector index")
+    }
+
+    eq(other: Vec2): boolean {
+        return this.x == other.x && this.y == other.y;
     }
 }
 

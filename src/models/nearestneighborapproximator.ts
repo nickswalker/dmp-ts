@@ -6,6 +6,10 @@ export default class NearestNeighborApproximator implements FunctionApproximator
         this.samples = samples;
     }
     evaluate(at: number): number {
+        // Only one value, so we'll assume a constant function...
+        if (this.samples.length == 1) {
+            return this.samples[0][1];
+        }
         // TODO: Use KD tree for this
         // There are things you should do to make nearest neighbors search fast, but
         // I'm not going to do them right now.
@@ -24,7 +28,7 @@ export default class NearestNeighborApproximator implements FunctionApproximator
                 currentNegativeValue = value;
             } else if (delta > 0 && delta < smallestPositiveDelta) {
                 smallestPositiveDelta = delta;
-                currentPositiveValue = delta;
+                currentPositiveValue = value;
             }
         }
         // Interpolate

@@ -1,5 +1,6 @@
 import DMP from "../models/dmp.js";
 import Vec2 from "../models/vec2.js";
+import NearestNeighborApproximator from "../models/nearestneighborapproximator";
 
 export type Demonstration = [number, Vec2][]
 type Derivative = [number, Vec2][]
@@ -14,13 +15,27 @@ export function learnFromDemonstrations( k: number, demonstrations: Demonstratio
         f.push(getForcingTerm(k, tau, demonstration, v[i], v_dot[i]))
     }
     if (normalized.length == 1) {
+        let [demo, tau]: [Demonstration, number] = normalized[0];
+        let demoF = f[0];
+        let xSamples: [number, number][] = [];
+        let ySamples: [number, number][] = [];
+        for (let i = 0; i < f.length; i++) {
+            let [time, sample] = demoF[i];
+            xSamples.push([time, sample.get(0)]);
+            ySamples.push([time, sample.get(1)]);
+        }
+        let xApproximator = new NearestNeighborApproximator(xSamples);
+        let yApproximator = new NearestNeighborApproximator(ySamples);
 
+        let xDMP = new DMP(k, xApproximator);
+        let yDMP = new DMP(k, yApproximator);
+        return [xDMP, yDMP];
     }
     return [];
 }
 
 // Put demonstrations into phase space
-function normalizeDemonstration(demonstration: Demonstration) : [Demonstration, number] {
+export function normalizeDemonstration(demonstration: Demonstration) : [Demonstration, number] {
     let result: Demonstration = [];
     const min = demonstration[0][0];
     const max = demonstration[demonstration.length - 1][0];
@@ -35,12 +50,14 @@ function normalizeDemonstration(demonstration: Demonstration) : [Demonstration, 
 
 // Approximate gradient in phase space.
 // Demonstration must be in phase space.
-function getDerivative(demonstration: Demonstration) : [number, Vec2][] {
+export function getDerivative(demonstration: Demonstration) : [number, Vec2][] {
     let result: Demonstration = [];
     for (let i = 0; i < demonstration.length; i++) {
-        if (i + 1 > demonstration.length) {
+        if (i + 1 >= demonstration.length) {
+            const [, prevGradient] = result[result.length - 1];
+            const [currentTime, ] = demonstration[demonstration.length - 1];
             // Just duplicate the last gradient.
-            result.push(result[result.length]);
+            result.push([currentTime, prevGradient]);
             break;
         }
         const currentSample = demonstration[i];
@@ -56,6 +73,7 @@ function getDerivative(demonstration: Demonstration) : [number, Vec2][] {
 }
 
 // Demonstration must be in phase space
+// Returns vector of forcing terms by time stamp, by component
 function getForcingTerm(k: number, tau: number, demonstration: Demonstration, v: [number, Vec2][], v_dot: [number, Vec2][]) : [number, Vec2][] {
     const x_0 = demonstration[0][1];
     const D =  2.0 * Math.sqrt(k);
