@@ -1,37 +1,48 @@
 import DMP from "../models/dmp.js";
 import Vec2 from "../models/vec2.js";
 import NearestNeighborApproximator from "../models/nearestneighborapproximator";
+import BasisFunctionApproximator from "../models/basisfunctionapproximator";
+import GaussianBasis from "./gaussianbasis";
+import {FunctionApproximator} from "../models/functionapproximator";
 
 export type Demonstration = [number, Vec2][]
 type Derivative = [number, Vec2][]
 export function learnFromDemonstrations( k: number, demonstrations: Demonstration[]) : DMP[] {
     // We assume that demonstrations is sorted by the timestep dimension
-    let normalized: [Demonstration, number][] = demonstrations.map(normalizeDemonstration);
-    let v: Derivative[] = normalized.map((normalizedTuple) => {return getDerivative(normalizedTuple[0])});
+    let normalizedDemos: [Demonstration, number][] = demonstrations.map(normalizeDemonstration);
+    let v: Derivative[] = normalizedDemos.map((normalizedTuple) => {return getDerivative(normalizedTuple[0])});
     let v_dot: Derivative[] = v.map(getDerivative);
     let f: [number, Vec2][][] = [];
-    for (let i = 0; i < normalized.length; i++) {
-        const [demonstration, tau] = normalized[i];
-        f.push(getForcingTerm(k, tau, demonstration, v[i], v_dot[i]))
-    }
-    if (normalized.length == 1) {
-        let [demo, tau]: [Demonstration, number] = normalized[0];
-        let demoF = f[0];
-        let xSamples: [number, number][] = [];
-        let ySamples: [number, number][] = [];
-        for (let i = 0; i < f.length; i++) {
+    let xSamples: [number, number][] = [];
+    let ySamples: [number, number][] = [];
+    for (let i = 0; i < normalizedDemos.length; i++) {
+        const [demonstration, tau] = normalizedDemos[i];
+        const demoF = getForcingTerm(k, tau, demonstration, v[i], v_dot[i]);
+        f.push(demoF);
+        for (let i = 0; i < demoF.length; i++) {
             let [time, sample] = demoF[i];
+            console.assert(0 <= time && time <= 1, "Forcing term times should be in phase space.");
             xSamples.push([time, sample.get(0)]);
             ySamples.push([time, sample.get(1)]);
         }
-        let xApproximator = new NearestNeighborApproximator(xSamples);
-        let yApproximator = new NearestNeighborApproximator(ySamples);
-
-        let xDMP = new DMP(k, xApproximator);
-        let yDMP = new DMP(k, yApproximator);
-        return [xDMP, yDMP];
     }
-    return [];
+
+    let xApproximator, yApproximator: FunctionApproximator;
+    if (normalizedDemos.length == 1) {
+        let [demo, tau]: [Demonstration, number] = normalizedDemos[0];
+        xApproximator = new NearestNeighborApproximator(xSamples);
+        yApproximator = new NearestNeighborApproximator(ySamples);
+    } else {
+        let xGaussianBasis = GaussianBasis.equallyDistributed(10);
+        let yGassianBasis = GaussianBasis.equallyDistributed(10);
+        xApproximator = BasisFunctionApproximator.learn(xSamples, xGaussianBasis);
+        yApproximator = BasisFunctionApproximator.learn(ySamples, yGassianBasis);
+
+        return
+    }
+    let xDMP = new DMP(k, xApproximator);
+    let yDMP = new DMP(k, yApproximator);
+    return [xDMP, yDMP];
 }
 
 // Put demonstrations into phase space

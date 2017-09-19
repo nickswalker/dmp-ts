@@ -1,8 +1,7 @@
-import Vec2 from "../src/models/vec2";
-import {learnFromDemonstrations} from "../src/dmp/learning";
-import {makeLinkedDMPRollout} from "../src/dmp/planning";
 import NearestNeighborApproximator from "../src/models/nearestneighborapproximator";
 import {assert} from "chai";
+import GaussianBasis from "../src/dmp/gaussianbasis";
+import BasisFunctionApproximator from "../src/models/basisfunctionapproximator";
 describe('LinearInterpolationApproximator', () => {
     const samplePhaseStep = Math.PI / 20;
     const trajectoryPhaseDuration = Math.PI * 2;
@@ -40,3 +39,53 @@ describe('LinearInterpolationApproximator', () => {
     });
 });
 
+describe('BasisFunctionApproximator', () => {
+    const singleBasis = new GaussianBasis([0], [1]);
+    const splitBasis = new GaussianBasis([-1, 1], [1, 1]);
+    const zeroApproximator = new BasisFunctionApproximator([0, 0], splitBasis);
+    const identityApproximator = new BasisFunctionApproximator([1], singleBasis);
+    const halfActivatedApproximator = new BasisFunctionApproximator([0, 1], splitBasis);
+
+    const unitNormalSamples: [number, number][] = [0.1, 0.5, 1].map((value): [number, number] => {return [value, singleBasis.evaluate(value)[0]]});
+    const bigBases = GaussianBasis.equallyDistributed(3);
+
+    describe('#learn', () => {
+        it('should correctly fit samples from the basis', () => {
+            const approximator = BasisFunctionApproximator.learn(unitNormalSamples, bigBases);
+            const errors: number[] = unitNormalSamples.map((sample) => {return Math.abs(approximator.evaluate(sample[0]) - sample[1])});
+            unitNormalSamples.forEach((sample) => { assert.approximately(approximator.evaluate(sample[0]), sample[1], 0.01);});
+            assert.isBelow(errors.reduce((a, b) => {return a + b}), 0.01);
+
+        });
+    });
+
+    describe('#evaluate', () => {
+        it('should return 0 for 0 weights', () => {
+            assert.equal(zeroApproximator.evaluate(0), 0);
+            assert.equal(zeroApproximator.evaluate(1), 0);
+            assert.equal(zeroApproximator.evaluate(-100), 0);
+        });
+        it('should consider not consider bases with 0 weights', () => {
+            assert.approximately(halfActivatedApproximator.evaluate(1), 1, 0.05);
+            assert.isBelow(halfActivatedApproximator.evaluate(-1), 1.0);
+        });
+        it('should be linear with a single basis function', () => {
+            [-1, 0, 1, 2].forEach((value => {assert.equal(identityApproximator.evaluate(value), value)}));
+        });
+    });
+});
+
+describe('GaussianBasis', () => {
+    const singleBasis = new GaussianBasis([0], [1]);
+    const splitBasis = new GaussianBasis([-1, 1], [1, 1]);
+
+    describe('#evaluate', () => {
+        it('should be symmetric', () => {
+            assert.deepEqual(splitBasis.evaluate(-2), splitBasis.evaluate(2).reverse());
+            assert.deepEqual(singleBasis.evaluate(1), singleBasis.evaluate(-1).reverse());
+        });
+        it('should give mean at center', () => {
+            assert.deepEqual(singleBasis.evaluate(0), [1.0]);
+        });
+    });
+});

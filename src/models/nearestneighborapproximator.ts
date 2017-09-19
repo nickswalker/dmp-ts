@@ -3,6 +3,7 @@ import {FunctionApproximator} from "./functionapproximator.js";
 export default class NearestNeighborApproximator implements FunctionApproximator {
     samples: [number, number][];
     constructor(samples: [number,number][]) {
+        samples.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
         this.samples = samples;
     }
     evaluate(at: number): number {
