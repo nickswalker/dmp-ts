@@ -1,5 +1,5 @@
 import NearestNeighborApproximator from "../src/models/nearestneighborapproximator";
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import GaussianBasis from "../src/dmp/gaussianbasis";
 import BasisFunctionApproximator from "../src/models/basisfunctionapproximator";
 describe('LinearInterpolationApproximator', () => {
@@ -46,15 +46,29 @@ describe('BasisFunctionApproximator', () => {
     const identityApproximator = new BasisFunctionApproximator([1], singleBasis);
     const halfActivatedApproximator = new BasisFunctionApproximator([0, 1], splitBasis);
 
-    const unitNormalSamples: [number, number][] = [0.1, 0.5, 1].map((value): [number, number] => {return [value, singleBasis.evaluate(value)[0]]});
+    const unitNormalSamples: [number, number][] = [0.1, 0.5, 1].map((value): [number, number] => {return [value, GaussianBasis.evaluateSingle(value, 1, 0)]});
+    const denseUnitNormalSamples: [number, number][] = [0.1, 0.3, 0.5, 0.7, 1].map((value): [number, number] => {return [value, GaussianBasis.evaluateSingle(value, 1, 0)]});
     const bigBases = GaussianBasis.equallyDistributed(3);
 
     describe('#learn', () => {
-        it('should correctly fit samples from the basis', () => {
+        it('should fail to fit under determined system', () => {
+            const sample: [number, number] = [.5, GaussianBasis.evaluateSingle(.5,1,0)];
+            assert.throws(() => {
+                const approximator = BasisFunctionApproximator.learn([sample], bigBases);
+            });
+
+        });
+        it('should correctly fit fully determined system', () => {
             const approximator = BasisFunctionApproximator.learn(unitNormalSamples, bigBases);
             const errors: number[] = unitNormalSamples.map((sample) => {return Math.abs(approximator.evaluate(sample[0]) - sample[1])});
             unitNormalSamples.forEach((sample) => { assert.approximately(approximator.evaluate(sample[0]), sample[1], 0.01);});
             assert.isBelow(errors.reduce((a, b) => {return a + b}), 0.01);
+        });
+        it('should correctly fit over-determined system', () => {
+            const approximator = BasisFunctionApproximator.learn(denseUnitNormalSamples, bigBases);
+            const errors: number[] = denseUnitNormalSamples.map((sample) => {return Math.abs(approximator.evaluate(sample[0]) - sample[1])});
+            denseUnitNormalSamples.forEach((sample) => { assert.approximately(approximator.evaluate(sample[0]), sample[1], 0.7);});
+            assert.isBelow(errors.reduce((a, b) => {return a + b}), 3.0);
 
         });
     });
