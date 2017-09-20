@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8>
+    <title>Dynamic Movement Primitives</title>
+    <meta name="description" content="Interactive demonstration of dynamic movement primitives.">
+    <meta name="author" content="Nick Walker"/>
+    <meta property="og:image" content="https://dmp.nickwalker.us/media/images/og-banner.jpg"/>
+    <link rel="canonical" href="https://dmp.nickwalker.us/">
+
+    <link rel="shortcut icon" href="/media/images/favicon.png"/>
+    <link rel="apple-touch-icon" href="/media/images/apple-touch-icon.png">
+    <link rel="mask-icon" href="/media/images/mask.svg" color="#891920">
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="build/example/experiments.js" type="module"></script>
+    <script type="module">
+        import * as Data from "./build/example/experiments.js";
+        let sineDemoData = {
+            x: Data.sine_demo_x,
+            y: Data.sine_demo_y,
+            name: "Demonstration"
+        };
+        let sineRolloutData = {
+            x: Data.sineRolloutX,
+            y: Data.sineRolloutY,
+            type: "scatter",
+            mode: "markers",
+            name: "Rollout"
+        };
+        let sineDerivativeData = {
+            x: Data.sineDotT,
+            y: Data.sineDotY,
+            name: "Derivative"
+        };
+        let sineSecondDerivativeData = {
+            x: Data.sineDotDotT,
+            y: Data.sineDotDotY,
+            name: "2nd Derivative"
+        };
+
+        let newGoalData = {
+            x: Data.newGoalRolloutX,
+            y: Data.newGoalRolloutY,
+            type: "scatter",
+            mode: "markers",
+            name: "New start, goal rollout"
+        };
+        let halfSpeedDemoData = {
+            x: Data.halfSpeedX,
+            y: Data.halfSpeedY,
+            type: "scatter",
+            mode: "markers",
+            name: "Half speed rollout"
+        };
+        let doubleSpeedDemoData = {
+            x: Data.doubleSpeedX,
+            y: Data.doubleSpeedY,
+            type: "scatter",
+            mode: "markers",
+            name: "Double speed rollout"
+        };
+        let noisyDemoData = {
+            x: Data.noisySineX,
+            y: Data.noisySineY,
+            name: "Noisy demo"
+        };
+
+        let multiRolloutData = {
+            x: Data.multiRolloutX,
+            y: Data.multiRolloutY,
+            type: "scatter",
+            mode: "markers",
+            name: "Combined rollout"
+        };
+
+        let obstacleRollout = {
+            x: Data.obstacleRolloutX,
+            y: Data.obstacleRolloutY,
+            type: "scatter",
+            mode: "markers",
+            name: "Obstacle rollout"
+        };
+
+        let forcingX = {
+            x: Data.f_x_X,
+            y: Data.f_x_Y,
+            name: "Forcing (x)"
+        };
+
+        let forcingY = {
+            x: Data.f_y_X,
+            y: Data.f_y_Y,
+            name: "Forcing (y)"
+        };
+
+        Plotly.newPlot('q1', [sineDemoData, sineDerivativeData, sineSecondDerivativeData]);
+        Plotly.newPlot('q2', [sineDemoData, sineRolloutData]);
+        Plotly.newPlot('q3', [newGoalData]);
+        Plotly.newPlot('q4', [halfSpeedDemoData, doubleSpeedDemoData]);
+        Plotly.newPlot('q5', [sineDemoData, noisyDemoData]);
+        Plotly.newPlot('q6', [multiRolloutData]);
+        Plotly.newPlot('q7', [obstacleRollout]);
+        Plotly.newPlot('q8', [forcingX, forcingY]);
+
+    </script>
+    <style>
+        .plot {
+            width: 600px;
+            height: 400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div id="plots" style="width: 100%;">
+<figure class="plot" id="q1"></figure>
+<figure class="plot" id="q2"></figure>
+<figure class="plot" id="q3"></figure>
+<figure class="plot" id="q4"></figure>
+<figure class="plot" id="q5"></figure>
+<figure class="plot" id="q6"></figure>
+<figure class="plot" id="q7"></figure>
+<figure class="plot" id="q8"></figure>
+</div>
+
+
+
+</body>
+</html>

@@ -9,7 +9,7 @@
     "rootDir": "./src/",
     "sourceMap": true,
     "declaration": true,
-    "compileOnSave":true
+    //"compileOnSave":true
   },
   "exclude": [
     "node_modules",

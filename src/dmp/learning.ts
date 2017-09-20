@@ -10,14 +10,18 @@ type Derivative = [number, Vec2][]
 export function learnFromDemonstrations( k: number, demonstrations: Demonstration[]) : DMP[] {
     // We assume that demonstrations is sorted by the timestep dimension
     let normalizedDemos: [Demonstration, number][] = demonstrations.map(toPhaseSpace);
-    let v: Derivative[] = normalizedDemos.map((normalizedTuple) => {return getDerivative(normalizedTuple[0])});
-    let v_dot: Derivative[] = v.map(getDerivative);
+    const x_dot: Derivative[] = demonstrations.map(getDerivative);
+    const x_dot_dot: Derivative[] = x_dot.map(getDerivative);
     let f: [number, Vec2][][] = [];
     let xSamples: [number, number][] = [];
     let ySamples: [number, number][] = [];
     for (let i = 0; i < normalizedDemos.length; i++) {
         const [demonstration, tau] = normalizedDemos[i];
-        const demoF = getForcingTerm(k, tau, demonstration, v[i], v_dot[i]);
+        const x_i = x_dot[i];
+        const x_dot_i = x_dot_dot[i];
+        const v_i = xToV(x_i, tau);
+        const v_dot_i = xToV(x_dot_i, tau);
+        const demoF = getForcingTerm(k, tau, demonstration, v_i, v_dot_i);
         f.push(demoF);
         for (let i = 0; i < demoF.length; i++) {
             let [time, sample] = demoF[i];
@@ -29,7 +33,6 @@ export function learnFromDemonstrations( k: number, demonstrations: Demonstratio
 
     let xApproximator, yApproximator: FunctionApproximator;
     if (normalizedDemos.length == 1) {
-        let [demo, tau]: [Demonstration, number] = normalizedDemos[0];
         xApproximator = new NearestNeighborApproximator(xSamples);
         yApproximator = new NearestNeighborApproximator(ySamples);
     } else {
@@ -86,13 +89,22 @@ export function getDerivative(demonstration: Demonstration) : [number, Vec2][] {
     return result;
 }
 
+function xToV(x: [number, Vec2][], tau: number): [number, Vec2][] {
+    let result: [number, Vec2][] = [];
+    for (let i = 0; i < x.length; i++) {
+        const [t_i, x_i] = x[i];
+        result.push([t_i * tau, x_i]);
+    }
+    return result;
+}
+
 // Demonstration must be in phase space
 // Returns vector of forcing terms by time stamp, by component
 function getForcingTerm(k: number, tau: number, demonstration: Demonstration, v: [number, Vec2][], v_dot: [number, Vec2][]) : [number, Vec2][] {
     const x_0 = demonstration[0][1];
     const D =  2.0 * Math.sqrt(k);
     const g = demonstration[demonstration.length - 1][1];
-
+    const kinv = 1.0 / k;
     let f: [number, Vec2][] = [];
     for (let i = 0; i < demonstration.length; i++) {
         const [s_i, x_i] = demonstration[i];
@@ -101,8 +113,11 @@ function getForcingTerm(k: number, tau: number, demonstration: Demonstration, v:
         // tau * v_dot + Dv
         const denominator = v_dot_i.scale(tau).add(v_i.scale(D));
         // -(g-x) + (g-x_0)s
-        const addend = g.scale(-1).sub(x_i).add(g.sub(x_0).scale(s_i));
-        f.push([s_i, denominator.scale(1.0 / k).add(addend)]);
+        const left = g.sub(x_i).scale(-1);
+        const right = g.sub(x_0).scale(s_i);
+        const addend = left.add(right);
+        const f_t_i = denominator.scale(kinv).add(addend);
+        f.push([s_i, f_t_i]);
     }
     return f;
 

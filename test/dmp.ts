@@ -1,9 +1,10 @@
 import Vec2 from "../src/models/vec2";
-import {Demonstration, getDerivative, learnFromDemonstrations, normalizeDemonstration} from "../src/dmp/learning";
+import {Demonstration, getDerivative, learnFromDemonstrations, toPhaseSpace} from "../src/dmp/learning";
 import {makeDMPRollout, makeLinkedDMPRollout} from "../src/dmp/planning";
 import DMP from "../src/models/dmp";
 import NearestNeighborApproximator from "../src/models/nearestneighborapproximator";
 import {assert} from "chai";
+import Obstacle from "../src/models/obstacle";
 
 describe('DMP', () => {
     const samplePhaseStep = Math.PI / 20;
@@ -14,17 +15,25 @@ describe('DMP', () => {
         // Move through the sine wave, collecting samples
         let demonstration: [number, Vec2][] = [];
         let timestamp = 0;
-        for(let phase = 0; phase <= trajectoryPhaseDuration; phase += samplePhaseStep) {
-            const value = Math.sin(phase);
-            demonstration.push([timestamp, new Vec2(phase, value)]);
+        for(let x = 0; x <= trajectoryPhaseDuration; x += samplePhaseStep) {
+            const y = Math.sin(x);
+            demonstration.push([timestamp, new Vec2(x, y)]);
             timestamp += sampleTimeStep;
         }
         return demonstration;
     }();
 
-    const normalizedSineDemo: [Demonstration, number] = normalizeDemonstration(sineDemo);
-
-    const sineDerivative: [number, Vec2][] = getDerivative(normalizedSineDemo[0]);
+    const denseSineDemo: Demonstration = function() {
+        // Move through the sine wave, collecting samples
+        let demonstration: [number, Vec2][] = [];
+        let timestamp = 0;
+        for(let x = 0; x <= trajectoryPhaseDuration; x += 0.01) {
+            const y = Math.sin(x);
+            demonstration.push([timestamp, new Vec2(x, y)]);
+            timestamp += 0.01;
+        }
+        return demonstration;
+    }();
 
     const lineDemo: Demonstration = function () {
         const line: [number, Vec2][] = [];
@@ -34,54 +43,85 @@ describe('DMP', () => {
         return line;
     }();
 
-    const normalizedLineDemo: [Demonstration, number] = normalizeDemonstration(lineDemo);
-
-    const lineDerivative: [number, Vec2][] = getDerivative(normalizedLineDemo[0]);
-
     describe('#learn', () => {
-        it('should exactly mimic single demonstration', () => {
+        it('should converge for a single demonstration', () => {
             const tau = 0.1 * 40;
-            const learnedDMPs = learnFromDemonstrations(1000, [sineDemo]);
+            const learnedDMPs = learnFromDemonstrations(40, [sineDemo]);
             const rollout = makeLinkedDMPRollout(learnedDMPs, new Vec2(0,0), new Vec2(0,0), new Vec2(trajectoryPhaseDuration, 0), tau, sampleTimeStep);
 
-            const [finalTime, finalState] = rollout[rollout.length - 1];
+            const [finalTime, finalRolloutState] = rollout[rollout.length - 1];
+            const [, finalDemoState] = sineDemo[sineDemo.length - 1];
+            assert.approximately(finalRolloutState.get(0),finalDemoState.get(0), 0.1, "X position incorrect");
+            assert.approximately(finalRolloutState.get(1),finalDemoState.get(1), 0.1, "Y position incorrect" );
         });
+        it
     });
 
     describe('#plan', () => {
-        it('rollout with neutral forcing term should be a line', () => {
-            const constantFunction = new NearestNeighborApproximator([[0,0]]);
-            const dmp = new DMP(1000, constantFunction);
-            const rollout: [number, number][] = makeDMPRollout(dmp, 0, 0.01, 1, 1, 0.05);
+        const constantFunction = new NearestNeighborApproximator([[0,0]]);
+        const dmp = new DMP(40, constantFunction);
+        const rollout: [number, number][] = makeDMPRollout(dmp, 0, 0, 1, 1, 0.05);
+        const obstacleRollout = makeDMPRollout(dmp, 0, 0, 1, 1, 0.05, [0.5]);
+        it('rollout with neutral forcing term should converge', () => {
             const [lastTime, lastPos] = rollout[rollout.length - 1];
-
             assert.approximately(lastTime, 1, 0.01, "Should last for one second.");
-            assert.approximately(lastPos, 1, 0.02, "Should converge to one.");
+            assert.approximately(lastPos, 1, 0.06, "Should converge to one.");
         });
+        it('rollout with neutral forcing term should not overshoot', () => {
+            rollout.forEach((value) => {assert.isBelow(value[1], 1.0)});
+        });
+
+
     });
 
 
     describe('#normalize', () => {
+        const [phaseLineDemo, tau]: [Demonstration, number] = toPhaseSpace(lineDemo);
         it('should leave points undisturbed', () => {
-            const [demo, tau]: [Demonstration, number] = normalizeDemonstration(lineDemo);
-            const [lastPhaseStamp, lastPoint] = demo[demo.length - 1];
-
-            assert.approximately(tau, 2.0, 0.01, "Tau should reflect original duration of trajectory");
-            assert.approximately(lastPhaseStamp, 1.0, 0.01, "Phase should be in [0, 1]");
-            assert.equal(lastPoint, lineDemo[lineDemo.length - 1][1], "Point should be undisturbed");
+            assert.equal(lineDemo.length, phaseLineDemo.length );
+            for (let i = 0; i < phaseLineDemo.length; i++) {
+                assert.equal(phaseLineDemo[i][1], lineDemo[i][1], "Point should be undisturbed");
+            }
+        });
+        it('should calculate the duration of the trajectory correctly', () => {
+            assert.approximately(tau, 2.0, 0.01);
+        });
+        it('should map onto (0, 1]', () => {
+            phaseLineDemo.forEach((point) => {assert.isTrue(0 < point[0] && point[0] <= 1.0)});
         });
     });
 
 
     describe('#derivative', () => {
+        const sineDerivative: [number, Vec2][] = getDerivative(sineDemo);
+        const lineDerivative: [number, Vec2][] = getDerivative(lineDemo);
+        const denseSineDerivative: [number, Vec2][] = getDerivative(denseSineDemo);
+        const denseSineSecondDerivative: [number, Vec2][] = getDerivative(denseSineDerivative);
         it('should return slope of a line', () => {
             assert.equal(lineDerivative[0][1].get(0), lineDerivative[1][1].get(0), "Derivative should be constant across line");
             assert.equal(lineDerivative[0][1].get(1), lineDerivative[1][1].get(1), "Derivative should be constant across line");
         });
         it('sine derivative should approximate cosine', () => {
-            assert.approximately(sineDerivative[0][1].get(0) / sineDerivative[0][1].get(1), 1.0, 0.15, "Derivative at axis crossing should be close to one");
-            assert.equal(sineDerivative[0][1].get(0), sineDerivative[1][1].get(0), "Derivative with respect to x should be constant");
+            denseSineDerivative.forEach((value) => {
+                const [t, point] = value;
+                assert.approximately(point.get(1), Math.cos(t), 0.01, "For input " + t.toString())
+            });
         });
+        it('sine second derivative should approximate negative sine', () => {
+            denseSineSecondDerivative.forEach((value) => {
+                const [t, point] = value;
+                assert.approximately(point.get(1), -Math.sin(t), 0.02, "For input " + t.toString())
+            });
+        });
+        it('should have the same time series', () => {
+            for (let i = 0; i < sineDerivative.length; i++) {
+                assert.equal(sineDerivative[i][0], sineDemo[i][0]);
+            }
+            for (let i = 0; i < lineDerivative.length; i++) {
+                assert.equal(lineDerivative[i][0], lineDemo[i][0]);
+            }
+        });
+
     });
 });
 
