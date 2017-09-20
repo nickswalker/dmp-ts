@@ -38,8 +38,6 @@ export function learnFromDemonstrations( k: number, demonstrations: Demonstratio
         let yGassianBasis = GaussianBasis.equallyDistributed(10);
         xApproximator = BasisFunctionApproximator.learn(xSamples, xGaussianBasis);
         yApproximator = BasisFunctionApproximator.learn(ySamples, yGassianBasis);
-
-        return
     }
     let xDMP = new DMP(k, xApproximator);
     let yDMP = new DMP(k, yApproximator);

@@ -25,8 +25,8 @@ describe('DMP', () => {
     }();
 
     describe('#learn', () => {
+        const tau = 0.1 * 40;
         it('should converge for a single demonstration', () => {
-            const tau = 0.1 * 40;
             const learnedDMPs = learnFromDemonstrations(1100, [sineDemo]);
             const rollout = makeLinkedDMPRollout(learnedDMPs, new Vec2(0,0), new Vec2(0,0), new Vec2(trajectoryMaxX, 0), tau, sampleTimeStep);
 
@@ -35,7 +35,16 @@ describe('DMP', () => {
             assert.approximately(finalRolloutState.get(0),finalDemoState.get(0), 0.3, "X position incorrect");
             assert.approximately(finalRolloutState.get(1),finalDemoState.get(1), 0.3, "Y position incorrect" );
         });
-        it
+        it('should converge for multiple demonstrations', () => {
+
+            const learnedDMPs = learnFromDemonstrations(1000, [sineDemo, sineDemo]);
+            const rollout = makeLinkedDMPRollout(learnedDMPs, new Vec2(0,0), new Vec2(0,0), new Vec2(trajectoryMaxX, 0), tau, sampleTimeStep);
+
+            const [finalTime, finalRolloutState] = rollout[rollout.length - 1];
+            const [, finalDemoState] = sineDemo[sineDemo.length - 1];
+            assert.approximately(finalRolloutState.get(0),finalDemoState.get(0), 0.3, "X position incorrect");
+            assert.approximately(finalRolloutState.get(1),finalDemoState.get(1), 0.3, "Y position incorrect" );
+        });
     });
 
     describe('#plan', () => {
