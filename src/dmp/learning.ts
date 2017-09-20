@@ -1,15 +1,15 @@
 import DMP from "../models/dmp.js";
 import Vec2 from "../models/vec2.js";
-import NearestNeighborApproximator from "../models/nearestneighborapproximator";
-import BasisFunctionApproximator from "../models/basisfunctionapproximator";
-import GaussianBasis from "./gaussianbasis";
-import {FunctionApproximator} from "../models/functionapproximator";
+import NearestNeighborApproximator from "../models/nearestneighborapproximator.js";
+import BasisFunctionApproximator from "../models/basisfunctionapproximator.js";
+import GaussianBasis from "./gaussianbasis.js";
+import {FunctionApproximator} from "../models/functionapproximator.js";
 
 export type Demonstration = [number, Vec2][]
 type Derivative = [number, Vec2][]
 export function learnFromDemonstrations( k: number, demonstrations: Demonstration[]) : DMP[] {
     // We assume that demonstrations is sorted by the timestep dimension
-    let normalizedDemos: [Demonstration, number][] = demonstrations.map(normalizeDemonstration);
+    let normalizedDemos: [Demonstration, number][] = demonstrations.map(toPhaseSpace);
     let v: Derivative[] = normalizedDemos.map((normalizedTuple) => {return getDerivative(normalizedTuple[0])});
     let v_dot: Derivative[] = v.map(getDerivative);
     let f: [number, Vec2][][] = [];
@@ -46,15 +46,18 @@ export function learnFromDemonstrations( k: number, demonstrations: Demonstratio
 }
 
 // Put demonstrations into phase space
-export function normalizeDemonstration(demonstration: Demonstration) : [Demonstration, number] {
+export function toPhaseSpace(demonstration: Demonstration) : [Demonstration, number] {
     let result: Demonstration = [];
     const min = demonstration[0][0];
     const max = demonstration[demonstration.length - 1][0];
+
     console.assert(min < max, "Demonstration samples must be sorted by timestamp");
     const span = max - min;
+    const timeToPhase = DMP.createPhaseFunctor(1, 0.01, span);
     for (let i = 0; i < demonstration.length; i++) {
-        const newStamp = (demonstration[i][0] - min) / span;
-        result.push([newStamp, demonstration[i][1]]);
+        const [t_i, sample_i] = demonstration[i];
+        const newStamp = timeToPhase(t_i);
+        result.push([newStamp, sample_i]);
     }
     return [result, span];
 }
@@ -71,14 +74,14 @@ export function getDerivative(demonstration: Demonstration) : [number, Vec2][] {
             result.push([currentTime, prevGradient]);
             break;
         }
-        const currentSample = demonstration[i];
-        const nextSample = demonstration[i + 1];
-        const timeDelta = nextSample[0] - currentSample[0];
+        let [t, sample_t] = demonstration[i];
+        let [t_next, sample_next] = demonstration[i + 1];
+        const timeDelta = t_next - t;
 
-        const positionDelta = nextSample[1].sub(currentSample[1]);
+        const positionDelta = sample_next.sub(sample_t);
         // Rise over run...
         const slope = positionDelta.scale(1 /timeDelta);
-        result.push([currentSample[0],slope]);
+        result.push([t,slope]);
     }
     return result;
 }
