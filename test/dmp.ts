@@ -5,7 +5,7 @@ import DMP from "../src/models/dmp";
 import NearestNeighborApproximator from "../src/models/nearestneighborapproximator";
 import {assert} from "chai";
 import Obstacle from "../src/models/obstacle";
-import {generateWave} from "../src/utils";
+import {demoToCSV, generateWave} from "../src/utils";
 
 describe('DMP', () => {
     const xStep = Math.PI / 20;
@@ -37,13 +37,15 @@ describe('DMP', () => {
         });
         it('should converge for multiple demonstrations', () => {
 
-            const learnedDMPs = learnFromDemonstrations(1000, [sineDemo, sineDemo]);
+            const learnedDMPs = learnFromDemonstrations(100, [sineDemo, sineDemo]);
             const rollout = makeLinkedDMPRollout(learnedDMPs, new Vec2(0,0), new Vec2(0,0), new Vec2(trajectoryMaxX, 0), tau, sampleTimeStep);
 
             const [finalTime, finalRolloutState] = rollout[rollout.length - 1];
             const [, finalDemoState] = sineDemo[sineDemo.length - 1];
+            console.log(demoToCSV(rollout));
             assert.approximately(finalRolloutState.get(0),finalDemoState.get(0), 0.3, "X position incorrect");
             assert.approximately(finalRolloutState.get(1),finalDemoState.get(1), 0.3, "Y position incorrect" );
+
         });
     });
 

@@ -1,4 +1,4 @@
-import Vec2 from "../models/vec2.js";
+import Vec2 from "../models/vec2";
 import Trajectory from "../models/trajectory.js";
 import {VectorFieldOverlay} from "./vector_field_overlay.js";
 import {Operation} from "../operations/operation.js";

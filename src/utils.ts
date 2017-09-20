@@ -9,7 +9,7 @@ export function demoToCSV(demonstration: Demonstration): string {
             const value = demonstration[i][1].get(j);
             result += value.toString() + ",";
         }
-        result += "";
+        result += "\n";
     }
     return result;
 }

@@ -1,13 +1,21 @@
 import DMP from "../models/dmp.js";
 import Vec2 from "../models/vec2.js";
+import Obstacle from "../models/obstacle.js";
 
 const epsilon = 0.0001;
 
-export function makeLinkedDMPRollout(dmps: DMP[], startState: Vec2, startVelocity: Vec2, goalState: Vec2, tau: number, timeStep: number): [number, Vec2][] {
+export function makeLinkedDMPRollout(dmps: DMP[], startState: Vec2, startVelocity: Vec2, goalState: Vec2, tau: number, timeStep: number, obstacles?: Obstacle[]): [number, Vec2][] {
     console.assert(dmps.length > 0, "Must pass at least one DMP");
+    if (obstacles === undefined) {
+        obstacles = [];
+    }
     let poses: [number, number][][] = [];
     for (let i = 0; i < dmps.length; i++) {
-        poses.push(makeDMPRollout(dmps[i],startState.get(i),startVelocity.get(i),goalState.get(i),tau,timeStep));
+        let o_i: number[] = [];
+        for (let i = 0; i < obstacles.length; i++) {
+            o_i.push(obstacles[i].center.get(i));
+        }
+        poses.push(makeDMPRollout(dmps[i],startState.get(i),startVelocity.get(i),goalState.get(i),tau,timeStep, o_i));
     }
     let finalPoses: [number, Vec2][] = [];
     for (let i = 0; i < poses[0].length; i++) {
@@ -18,42 +26,44 @@ export function makeLinkedDMPRollout(dmps: DMP[], startState: Vec2, startVelocit
     return finalPoses;
 }
 
-export function makeDMPRollout(dmp: DMP, startState: number, startVelocity: number, goalState: number, tau: number, timeStep:number) : [number, number][] {
-    const createPhaseFunctor = (s_0: number, convergeto: number)  => {
-        const alpha = -Math.log(convergeto / s_0);
-        return function (t: number) : number {
-            // tau * s_dot(t) = -alpha * s(t)
-            // s_dot(t) = (-alpha / tau) * s(t)
-            // s(t) = s(0) * e^(t * (-alpha/tau))
-            return s_0 * Math.exp( t * (-alpha / tau));
-        }
-    };
-
-    const f = (phase: number) => {
-        return dmp.f.evaluate(phase);
-    };
+export function makeDMPRollout(dmp: DMP, startState: number, startVelocity: number, goalState: number, tau: number, timeStep:number, obstacles?: number[]) : [number, number][] {
+    const f = dmp.f.evaluate.bind(dmp.f);
+    if (obstacles === undefined) {
+        obstacles = [];
+    }
 
     let poses: [number, number][] = [];
 
-    let t = 0;
+    // For convenience so that our first action is marked a t=0
+    let t = -timeStep;
     const x_0 = startState;
     let x = x_0;
     let v = startVelocity;
     const g = goalState;
-    const s = createPhaseFunctor(1, 0.01);
+    const s = DMP.createPhaseFunctor(1, 0.01, tau);
     // Depending on the timestep we can have numerical issues
-    while (t <= tau + epsilon) {
+    while (t < tau + epsilon - timeStep) {
+        t += timeStep;
+
+        const o: number[] = obstacles.map((o) => {
+            const num = Math.exp(-Math.abs(o - x)) * (x - o);
+            const denom = Math.pow(x - o, 2);
+            return num / denom;
+        });
+
+        const o_total = o.reduce((a, b) => {return a + b}, 0);
+
         // K( (g-x) - (g -x0)s + f(s)) - DV
         const s_t = s(t);
         const forcing = f(s_t);
-        let v_dot = dmp.k * ((g - x) - (g - x_0) * s_t + forcing) - dmp.d * v;
+        let v_dot = dmp.k * ((g - x) - (g - x_0) * s_t + forcing) - dmp.d * v + o_total;
         v_dot /= tau;
         let x_dot = v / tau;
 
         v += v_dot * timeStep;
         x += x_dot * timeStep;
         poses.push([t, x]);
-        t += timeStep;
+
     }
 
     return poses;

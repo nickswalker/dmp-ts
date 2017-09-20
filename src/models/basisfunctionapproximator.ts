@@ -1,6 +1,8 @@
+///<reference path="../index.d.ts"/>
 import {FunctionApproximator} from "./functionapproximator.js";
 import {Basis} from "../dmp/basis.js";
-import {Matrix, MatrixTransposeView, solve} from "ml-matrix";
+// Need the import for node.
+import {Matrix, solve} from "ml-matrix";
 export default class BasisFunctionApproximator implements FunctionApproximator {
     w: number[];
     bases: Basis;
@@ -17,7 +19,7 @@ export default class BasisFunctionApproximator implements FunctionApproximator {
         const y = Matrix.columnVector(y_raw);
         const Q: Matrix = new Matrix(q_by_row);
         // Solve Qw = y
-        const weights: Matrix = solve(Q, y, true);
+        const weights: Matrix = solve(Q, y, false);
         console.assert(weights.isColumnVector());
         return new BasisFunctionApproximator(weights.to1DArray(), bases);
 
