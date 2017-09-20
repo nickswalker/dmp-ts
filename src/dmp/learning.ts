@@ -17,10 +17,8 @@ export function learnFromDemonstrations( k: number, demonstrations: Demonstratio
     let ySamples: [number, number][] = [];
     for (let i = 0; i < normalizedDemos.length; i++) {
         const [demonstration, tau] = normalizedDemos[i];
-        const x_i = x_dot[i];
-        const x_dot_i = x_dot_dot[i];
-        const v_i = xToV(x_i, tau);
-        const v_dot_i = xToV(x_dot_i, tau);
+        const v_i = xToV(x_dot[i], tau);
+        const v_dot_i = xToV(x_dot_dot[i], tau);
         const demoF = getForcingTerm(k, tau, demonstration, v_i, v_dot_i);
         f.push(demoF);
         for (let i = 0; i < demoF.length; i++) {
