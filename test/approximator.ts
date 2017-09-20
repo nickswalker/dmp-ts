@@ -2,37 +2,29 @@ import NearestNeighborApproximator from "../src/models/nearestneighborapproximat
 import {assert, expect} from "chai";
 import GaussianBasis from "../src/dmp/gaussianbasis";
 import BasisFunctionApproximator from "../src/models/basisfunctionapproximator";
+import {generateWaveNoT} from "../src/utils";
 describe('LinearInterpolationApproximator', () => {
-    const samplePhaseStep = Math.PI / 20;
-    const trajectoryPhaseDuration = Math.PI * 2;
-    const samples: [number, number][] = function (){
-        // Move through the sine wave, collecting samples
-        let samples: [number, number][] = [];
-
-        for(let phase = 0; phase <= trajectoryPhaseDuration; phase += samplePhaseStep) {
-            const value = Math.sin(phase);
-            samples.push([phase, value]);
-
-        }
-        return samples;
-    }();
+    const xStep = Math.PI / 20;
+    const maxX = Math.PI * 2;
+    const samples: [number, number][] = generateWaveNoT(maxX, xStep);
+    const approximator = new NearestNeighborApproximator(samples);
 
     describe('#learn', () => {
         it('should exactly mimic sampled values', () => {
-            const approximator = new NearestNeighborApproximator(samples);
             assert.equal(approximator.evaluate(0), Math.sin(0), "Approximator should return 0 for input 0.");
-            assert.equal(approximator.evaluate(samplePhaseStep), Math.sin(samplePhaseStep), "Approximator should return sin(samplePhaseStep).");
-            assert.equal(approximator.evaluate(trajectoryPhaseDuration), Math.sin(trajectoryPhaseDuration), "Approxmator should return 0 for input 2PI.");
+            assert.equal(approximator.evaluate(xStep), Math.sin(xStep), "Approximator should return sin(samplePhaseStep).");
+            assert.equal(approximator.evaluate(maxX), Math.sin(maxX), "Approxmator should return 0 for input 2PI.");
         });
         it('should interpolate intermediate values', () => {
-            const approximator = new NearestNeighborApproximator(samples);
-            const intermediateApprox = approximator.evaluate(samplePhaseStep / 2);
-            const intermediateTrue = (Math.sin(0) + Math.sin(samplePhaseStep)) / 2.0;
-            assert.equal( intermediateApprox, intermediateTrue, "Approximator should interpolate values.")
+            for (let i = 0; i < maxX; i++) {
+                const intermediateApprox = approximator.evaluate(i + (xStep / 2));
+                const intermediateTrue = (Math.sin(i) + Math.sin(i + xStep)) / 2.0;
+                assert.approximately( intermediateApprox, intermediateTrue, 0.01, "Failed for i=" + i.toString());
+            }
+
         });
         it('should gracefully handle a single sample', () => {
             const approximator = new NearestNeighborApproximator([[0, 1]]);
-
             assert.equal( approximator.evaluate(1), 1.0, "Approximator should generalize below.");
             assert.equal( approximator.evaluate(-1), 1.0, "Approximator should generalize above.");
         });

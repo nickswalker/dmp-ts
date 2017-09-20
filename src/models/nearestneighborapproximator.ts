@@ -37,7 +37,7 @@ export default class NearestNeighborApproximator implements FunctionApproximator
         console.assert(span > 0, "Span should be positive magnitude");
         const abovePercentage = smallestPositiveDelta / span;
         const belowPercentage = Math.abs(largestNegativeDelta) / span;
-        return abovePercentage * currentPositiveValue + belowPercentage * currentNegativeValue;
+        return belowPercentage * currentPositiveValue + abovePercentage * currentNegativeValue;
     }
 
 }
