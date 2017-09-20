@@ -19,7 +19,8 @@
         let sineDemoData = {
             x: Data.sine_demo_x,
             y: Data.sine_demo_y,
-            name: "Demonstration"
+            name: "Demonstration",
+            mode: "markers"
         };
         let sineRolloutData = {
             x: Data.sineRolloutX,
@@ -63,16 +64,18 @@
         let noisyDemoData = {
             x: Data.noisySineX,
             y: Data.noisySineY,
-            name: "Noisy demo"
+            name: "Noisy demo",
+            mode: "markers"
         };
 
+        /*
         let multiRolloutData = {
             x: Data.multiRolloutX,
             y: Data.multiRolloutY,
             type: "scatter",
             mode: "markers",
             name: "Combined rollout"
-        };
+        };*/
 
         let obstacleRollout = {
             x: Data.obstacleRolloutX,
@@ -80,6 +83,13 @@
             type: "scatter",
             mode: "markers",
             name: "Obstacle rollout"
+        };
+        let noObstacleRollout = {
+            x: Data.noObstacleRolloutX,
+            y: Data.noObstacleRolloutY,
+            type: "scatter",
+            mode: "markers",
+            name: "No Obstacle rollout"
         };
 
         let forcingX = {
@@ -94,13 +104,31 @@
             name: "Forcing (y)"
         };
 
-        Plotly.newPlot('q1', [sineDemoData, sineDerivativeData, sineSecondDerivativeData]);
-        Plotly.newPlot('q2', [sineDemoData, sineRolloutData]);
-        Plotly.newPlot('q3', [newGoalData]);
-        Plotly.newPlot('q4', [halfSpeedDemoData, doubleSpeedDemoData]);
-        Plotly.newPlot('q5', [sineDemoData, noisyDemoData]);
-        Plotly.newPlot('q6', [multiRolloutData]);
-        Plotly.newPlot('q7', [obstacleRollout]);
+        let demoLayout = {
+            title: "Sine Demonstration"
+        };
+        Plotly.newPlot('q1', [sineDemoData/*, sineDerivativeData, sineSecondDerivativeData*/],  {
+            title: "Sine Demonstration"
+        });
+        Plotly.newPlot('q2', [sineDemoData, sineRolloutData],  {
+            title: "Single Demonstration with DMP Plan"
+        });
+        Plotly.newPlot('q3', [newGoalData],  {
+            title: "DMP Plan, Start=(0,-1), Goal=(15, 2)"
+        });
+        Plotly.newPlot('q4a', [halfSpeedDemoData], {
+            title: "DMP Plan with tau=8.0"
+        });
+        Plotly.newPlot('q4b', [doubleSpeedDemoData], {
+            title: "DMP Plan with tau=2.0"
+        });
+        Plotly.newPlot('q5', [sineDemoData, noisyDemoData], {
+            title: "Noisy Demonstration"
+        });
+        //Plotly.newPlot('q6', [multiRolloutData]);
+        Plotly.newPlot('q7', [obstacleRollout, noObstacleRollout], {
+            title: "Obstacle Avoidance"
+        });
         Plotly.newPlot('q8', [forcingX, forcingY]);
 
     </script>
@@ -117,7 +145,8 @@
 <figure class="plot" id="q1"></figure>
 <figure class="plot" id="q2"></figure>
 <figure class="plot" id="q3"></figure>
-<figure class="plot" id="q4"></figure>
+<figure class="plot" id="q4a"></figure>
+<figure class="plot" id="q4b"></figure>
 <figure class="plot" id="q5"></figure>
 <figure class="plot" id="q6"></figure>
 <figure class="plot" id="q7"></figure>

@@ -39,7 +39,7 @@ export default class Vec2 {
         return new Vec2(this.x * factor, this.y * factor);
     }
 
-    norm() {
+    norm(): Vec2 {
         const l = this.length();
         return new Vec2(this.x / l, this.y / l);
     }

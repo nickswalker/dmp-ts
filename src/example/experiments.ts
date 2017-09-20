@@ -7,11 +7,12 @@ import {toPhaseSpace} from "../dmp/learning.js";
 import DMP from "../models/dmp.js";
 import {generateWave, partialsToArrays, tuplesToArrays} from "../utils.js";
 import Obstacle from "../models/obstacle.js";
+import NearestNeighborApproximator from "../models/nearestneighborapproximator.js";
 
 // Question 1
 const demoXStep = Math.PI / 40;
-const demoXLimit = Math.PI * 2;
-const sampleTimeStep = 0.05;
+const demoXLimit = Math.PI * 5;
+const sampleTimeStep = 0.1;
 const rolloutResolution = 0.05;
 
 const sineDemo: Demonstration = generateWave(demoXLimit, sampleTimeStep, demoXStep);
@@ -35,7 +36,7 @@ export const [f_x_X, f_x_Y] = sampleFunction(learnedDMPs[0].f,0, 1, 0.01);
 export const [f_y_X, f_y_Y] = sampleFunction(learnedDMPs[1].f,0, 1, 0.01);
 
 // Question 3
-const newGoalRollout = makeLinkedDMPRollout(learnedDMPs, new Vec2(0,-1), new Vec2(0,0), new Vec2(4, -1), tau, rolloutResolution);
+const newGoalRollout = makeLinkedDMPRollout(learnedDMPs, new Vec2(0,-1), new Vec2(0,0), new Vec2(demoXLimit, 2), tau, rolloutResolution);
 
 export const [newGoalRolloutT, newGoalRolloutX, newGoalRolloutY] = demoToArrays(newGoalRollout);
 
@@ -55,7 +56,7 @@ function gaussion() {
     while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
     while(v === 0) v = Math.random();
     let standard = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
-    return standard / 80;
+    return standard / 60;
 
 }
 const noisySineDemo = generateWave(demoXLimit, sampleTimeStep, demoXStep, gaussion);
@@ -63,13 +64,17 @@ const noisySineDemo = generateWave(demoXLimit, sampleTimeStep, demoXStep, gaussi
 export const [noisySineT, noisySineX, noisySineY] = demoToArrays(noisySineDemo);
 
 // Question 6
+/*
 const multiDMPs: DMP[] = learnFromDemonstrations(40, [sineDemo, noisySineDemo]);
 const multiRollout = makeLinkedDMPRollout(multiDMPs, new Vec2(0,0), new Vec2(0,0), new Vec2(demoXLimit, 0), tau, rolloutResolution);
 
 export const [multiRolloutT, multiRolloutX, multiRolloutY] = demoToArrays(multiRollout);
-
+*/
 // Question 7
+const constantFunction = new NearestNeighborApproximator([[0,0]]);
+const dmp = new DMP(40, constantFunction);
+const noObstacleRollout = makeLinkedDMPRollout([dmp, dmp], new Vec2(-5,-5), new Vec2(0,0), new Vec2(5, 5), tau, rolloutResolution);
+const obstacleRollout = makeLinkedDMPRollout([dmp, dmp], new Vec2(-5,-5), new Vec2(0,0), new Vec2(5, 5), tau, rolloutResolution, [new Obstacle(new Vec2(-3, -3.5), 1)]);
 
-const obstacleRollout = makeLinkedDMPRollout(learnedDMPs, new Vec2(0,0), new Vec2(0,0), new Vec2(demoXLimit, 0), tau, rolloutResolution, [new Obstacle(Vec2.zero())]);
-
+export const [noObstacleRolloutT, noObstacleRolloutX, noObstacleRolloutY] = demoToArrays(noObstacleRollout);
 export const [obstacleRolloutT, obstacleRolloutX, obstacleRolloutY] = demoToArrays(obstacleRollout);
